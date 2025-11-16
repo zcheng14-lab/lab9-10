@@ -76,26 +76,6 @@ void add_my_city(int x, int y, int w, int h) {
     my_cities[num_my_cities - 1].h = h;
 }
 
-// --- 队列 (Queue) 操作 (用于 "垄断模式") ---
-// 队列是"先进先出" (FIFO)，像排队。这里用"链表"实现。
-
-// 出队 (Dequeue): 从 'monq' 队列头部取出一个元素
-// (参数里的 *x, *y, *dir 是"指针"，用来把取出的值"传回"给调用者)
-int deq(MonopolizationQueue *monq, int *x, int *y, char *dir) {
-    if (monq->head == NULL) {
-        return 0; // 队列是空的，出队失败
-    }
-    MonopolizationQueueNode *temp = monq->head; // 临时记住队头节点
-    *x = temp->x; // 通过指针"传回"数据
-    *y = temp->y;
-    *dir = temp->dir;
-    monq->head = temp->next; // 队头指针 "前进" 到下一个节点
-    if (monq->head == NULL) {
-        monq->tail = NULL; // 如果队头没了，说明队列空了，队尾也要设为 NULL
-    }
-    free(temp); // 'free' 释放掉刚才取出的那个节点的内存，防止"内存泄漏"
-    return 1; // 出队成功
-}
 
 // 入队 (Enqueue): 将 (x, y) 的四个邻居 (N, E, S, W) 加入 'monq' 队尾
 void enq_neighbours(MonopolizationQueue *monq, int x, int y) {
@@ -257,3 +237,4 @@ int main(int argc, char *argv[]) {
     
     return 0; // 程序正常退出
 }
+
