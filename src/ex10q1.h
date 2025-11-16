@@ -111,65 +111,6 @@ void pq_swap(SearchPQ *pq, int i, int j) {
     pq->storage[j]->pqi = j;
 }
 
-// "上浮" (Sift Up): 将元素 i 调整到堆的正确位置 (向上)
-void pq_heapify_up(SearchPQ *pq, int i) {
-    while (i > 0 && is_prioritized(pq->storage[i], pq->storage[parent(i)])) {
-        pq_swap(pq, i, parent(i));
-        i = parent(i);
-    }
-}
-
-// "下沉" (Sift Down): 将元素 i 调整到堆的正确位置 (向下)
-void pq_heapify_down(SearchPQ *pq, int i) {
-    int max_index = i;
-    int l = left(i);
-    int r = right(i);
-
-    if (l < pq->size && is_prioritized(pq->storage[l], pq->storage[max_index])) {
-        max_index = l;
-    }
-    if (r < pq->size && is_prioritized(pq->storage[r], pq->storage[max_index])) {
-        max_index = r;
-    }
-    if (i != max_index) {
-        pq_swap(pq, i, max_index);
-        pq_heapify_down(pq, max_index); // 递归下沉
-    }
-}
-
-// "修复" (Heapify): 自动选择上浮或下沉来修复 i
-void pq_heapify(SearchPQ *pq, int i)
-{
-    if (i < 0 || i >= pq->size) {
-        return;
-    }
-    int p = parent(i);
-    if (i > 0 && is_prioritized(pq->storage[i], pq->storage[p])) {
-        pq_heapify_up(pq, i); // 应该上浮
-    } else {
-        pq_heapify_down(pq, i); // 否则下沉
-    }
-}
-
-// 插入 (Insert): 添加一个新元素到堆中
-void pq_insert(SearchPQ *pq, Candidate *cand)
-{
-    // 1. 检查容量，如果满了就 2 倍扩容
-    if (pq->size == pq->capacity) {
-        pq->capacity *= 2;
-        pq->storage = (Candidate **) realloc(pq->storage, pq->capacity * sizeof(Candidate *));
-        if (pq->storage == NULL) {
-            exit(1);
-        }
-    }
-    // 2. 放在数组末尾
-    int i = pq->size;
-    pq->size++;
-    pq->storage[i] = cand;
-    cand->pqi = i;
-    // 3. "上浮" 到正确位置
-    pq_heapify_up(pq, i);
-}
 
 // 更新 (Update): 修改元素 i 的优先级
 void pq_update(SearchPQ *pq, int i, int new_cc)
@@ -184,27 +125,6 @@ void pq_update(SearchPQ *pq, int i, int new_cc)
     }
 }
 
-// 移除 (Remove): 从堆中删除索引为 i 的元素
-void pq_remove(SearchPQ *pq, int i)
-{
-    if (pq->size == 0 || i < 0 || i >= pq->size) {
-        return; // 索引无效
-    }
-    Candidate *to_remove = pq->storage[i]; // 记住它，稍后 free
-    int last_index = pq->size - 1;
-    
-    // 1. 用"最后一个"元素覆盖"要删除"的元素
-    pq_swap(pq, i, last_index);
-    // 2. 缩小 size (逻辑删除)
-    pq->size--;
-    // 3. 释放被删除元素的内存
-    destroy_candidate(to_remove);
-
-    // 4. "修复"被换到 i 的那个元素 (原 last_index 元素)
-    if (i < pq->size) {
-        pq_heapify(pq, i);
-    }
-}
 
 // 提取最大 (Extract Max): 移除并返回"优先级最高"的元素
 void pq_extract_max(SearchPQ *pq, int *x, int *y)
