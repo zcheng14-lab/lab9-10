@@ -72,27 +72,6 @@ void add_my_city(int x, int y, int w, int h) {
 }
 
 
-// 入队 (Enqueue): 将 (x, y) 的四个邻居加入队尾
-void enq_neighbours(MonopolizationQueue *monq, int x, int y) {
-    int dx[] = {0, 1, 0, -1}; // N, E, S, W
-    int dy[] = {1, 0, -1, 0};
-    char dirs[] = {'N', 'E', 'S', 'W'};
-    for (int i = 0; i < 4; i++) {
-        MonopolizationQueueNode *newNode = (MonopolizationQueueNode*) malloc(sizeof(MonopolizationQueueNode));
-        if (newNode == NULL) exit(1);
-        newNode->x = x + dx[i];
-        newNode->y = y + dy[i];
-        newNode->dir = dirs[i];
-        newNode->next = NULL;
-        if (monq->tail == NULL) { // 队空
-            monq->head = newNode;
-            monq->tail = newNode;
-        } else { // 链接到队尾
-            monq->tail->next = newNode;
-            monq->tail = newNode;
-        }
-    }
-}
 
 // 清空队列 (释放所有节点内存)
 void clear_queue(MonopolizationQueue *monq) {
@@ -256,3 +235,4 @@ int main(int argc, char *argv[]) {
     
     return 0; // 程序正常退出
 }
+
