@@ -25,9 +25,9 @@ Position *played_positions = NULL; // 存储"所有已玩位置"的动态数组
 int num_played = 0;
 int grid_sw_x, grid_sw_y, grid_w, grid_h; // 网格边界
 
-// !!新!! 智能搜索用的"优先队列" (Priority Queue) 指针
+// 智能搜索用的"优先队列" (Priority Queue) 指针
 // 它会帮我们存储所有"R"报告提供的线索 (候选点)，并自动排序
-SearchPQ *pq = NULL;
+SearchPQ *pq = NULL;//SearchPQ是一个结构体（Struct）的名称。它代表了您的程序中用于管理“智能搜索”的优先队列的数据类型。*pq这是一个指针变量
 
 // 检查 (x, y) 是否可用 (越界、在城市、已玩过)
 // (和 ex9q1 一样)
@@ -53,7 +53,7 @@ int is_available(int x, int y) {
 // (和 ex9q1 一样)
 void add_played_position(int x, int y) {
     num_played++;
-    played_positions = (Position*) realloc(played_positions, num_played * sizeof(Position));
+    played_positions = (Position*) realloc(played_positions, num_played * sizeof(Position));//realloc重新分配内存
     if (played_positions == NULL) exit(1);
     played_positions[num_played - 1].x = x;
     played_positions[num_played - 1].y = y;
@@ -72,59 +72,56 @@ void add_my_city(int x, int y, int w, int h) {
 }
 
 
-
 // 清空队列 (释放所有节点内存)
 void clear_queue(MonopolizationQueue *monq) {
     int x, y;
     char dir;
-    while (deq(monq, &x, &y, &dir)); // 持续出队
+    while (deq(monq, &x, &y, &dir)); //Dequeue是操作队列（Queue）这种数据结构的核心函数之一
 }
 
 // --- 主函数 ---
 int main(int argc, char *argv[]) {
     if (argc < 2) return 1;
-    int my_player_num = atoi(argv[1]); // "1" -> 1
+    int my_player_num = atoi(argv[1]); //atoi将一个表示整数的字符串（文本）转换成实际的整数数据类型（数字）
     char buffer[100]; // 读行缓冲区
 
     // --- 游戏设置阶段 (和 ex9q1 一样) ---
-    fgets(buffer, sizeof(buffer), stdin); // 读 "P1 cities:"
-    while (fgets(buffer, sizeof(buffer), stdin) && strncmp(buffer, "done", 4) != 0) {
+    fgets(buffer, sizeof(buffer), stdin); // 读 "P1 cities:"。fgets用于从指定的输入流中读取一行字符串。
+    while (fgets(buffer, sizeof(buffer), stdin) && strncmp(buffer, "done", 4) != 0) {//"done" 是一个字符串常量，它充当一个特定的终止命令或标记
         if (my_player_num == 1) {
             int x, y, w, h;
-            if(sscanf(buffer, "(%d, %d), %d, %d", &x, &y, &w, &h) == 4) {
+            if(sscanf(buffer, "(%d, %d), %d, %d", &x, &y, &w, &h) == 4) {//sscanf的功能是从一个字符串中，按照指定的格式读取并解析（扫描）数据。
                 add_my_city(x, y, w, h);
             }
         }
     }
-    fgets(buffer, sizeof(buffer), stdin); // 读 "P2 cities:"
-    while (fgets(buffer, sizeof(buffer), stdin) && strncmp(buffer, "done", 4) != 0) {
+    fgets(buffer, sizeof(buffer), stdin); // 读 "P2 cities:"fgets用于从指定的输入流中读取一行字符串。
+    while (fgets(buffer, sizeof(buffer), stdin) && strncmp(buffer, "done", 4) != 0) {//"done" 是一个字符串常量，它充当一个特定的终止命令或标记
         if (my_player_num == 2) {
             int x, y, w, h;
-            if(sscanf(buffer, "(%d, %d), %d, %d", &x, &y, &w, &h) == 4) {
+            if(sscanf(buffer, "(%d, %d), %d, %d", &x, &y, &w, &h) == 4) {//sscanf的功能是从一个字符串中，按照指定的格式读取并解析（扫描）数据
                 add_my_city(x, y, w, h);
             }
         }
     }
-    fgets(buffer, sizeof(buffer), stdin); // 读 "Grid:"
+    fgets(buffer, sizeof(buffer), stdin); // 读 "Grid:"fgets用于从指定的输入流中读取一行字符串
     sscanf(buffer, "(%d, %d), %d, %d", &grid_sw_x, &grid_sw_y, &grid_w, &grid_h);
 
 
     // --- 游戏主循环 ---
-    while (fgets(buffer, sizeof(buffer), stdin)) {
+    while (fgets(buffer, sizeof(buffer), stdin)) {//fgets用于从指定的输入流中读取一行字符串
         int current_turn_player = 0;
         if (strncmp(buffer, "P1:", 3) == 0) current_turn_player = 1;
         else if (strncmp(buffer, "P2:", 3) == 0) current_turn_player = 2;
 
         // A) 别人的回合
         if (current_turn_player != my_player_num) {
-            fgets(buffer, sizeof(buffer), stdin); // 读对手猜测
+            fgets(buffer, sizeof(buffer), stdin); // 读对手猜测fgets用于从指定的输入流中读取一行字符串
             int x, y;
-            if(sscanf(buffer, "(%d, %d)", &x, &y) == 2) {
+            if(sscanf(buffer, "(%d, %d)", &x, &y) == 2) {//sscanf的功能是从一个字符串中，按照指定的格式读取并解析（扫描）数据
                 add_played_position(x, y); // 记录
                 // !!新!! 检查对手是否"抢"了我们的候选点
                 int pqi = find_candidate(x, y); 
-                if (pqi != -1) {
-                    pq_remove(pq, pqi); // 如果是，从我们的队列中移除
                 }
             }
             fgets(buffer, sizeof(buffer), stdin); // 读对手结果
@@ -147,38 +144,24 @@ int main(int argc, char *argv[]) {
             } else {
                 // "垄断模式" (和 ex9q1 一样): 从普通队列(mon_queue)取
                 bool found_move = false;
-                while (deq(&mon_queue, &guess_x, &guess_y, &last_deq_dir)) {
+                while (deq(&mon_queue, &guess_x, &guess_y, &last_deq_dir)) {//Dequeue是用来操作队列（Queue）这种数据结构的核心函数
                     if (is_available(guess_x, guess_y) && 
                         (guess_x >= hit_min_x && guess_x <= hit_max_x && guess_y >= hit_min_y && guess_y <= hit_max_y)) {
                         found_move = true; // 找到有效猜测
                         break;
                     }
                 }
-                if (!found_move) {
-                    // 垄断队列空了，退回"搜索模式"
-                    is_in_search_mode = true;
-                    clear_queue(&mon_queue);
-                    // !!新!! 退回时，也优先用 PQ
-                    if (pq->size == 0) { // 没线索，用老办法
-                         get_guess_position(search_min_x, search_max_x, search_min_y, search_max_y, is_available, &guess_x, &guess_y);
-                    } else { // 有线索，用新办法
-                        pq_extract_max(pq, &guess_x, &guess_y);
-                    }
-                }
             }
 
             // 做出猜测
             printf("(%d, %d)\n", guess_x, guess_y);
-            fflush(stdout); // !!重要!! 刷新缓冲区，立刻把猜测发给裁判
             add_played_position(guess_x, guess_y); // 记录自己的猜测
             // !!新!! 检查我们刚猜的点
             int pqi = find_candidate(guess_x, guess_y);
-            if (pqi != -1) {
-                pq_remove(pq, pqi); // !!新!! 如果它在优先队列里，就移除 (猜过了)
-            }
+
 
             // C) 读取结果并更新 AI 状态
-            fgets(buffer, sizeof(buffer), stdin); 
+            fgets(buffer, sizeof(buffer), stdin); //fgets的作用是从标准输入通道中读取下一行文本，并将其存储到 buffer 数组中。
             
             if (strncmp(buffer, "H", 1) == 0) { // "H" (Hit - 击中)
                 if (is_in_search_mode) {
@@ -189,7 +172,7 @@ int main(int argc, char *argv[]) {
                     hit_min_y = grid_sw_y;
                     hit_max_y = grid_sw_y + grid_h - 1;
                 }
-                enq_neighbours(&mon_queue, guess_x, guess_y); // 邻居加入"垄断队列"
+                enq_neighbours(&mon_queue, guess_x, guess_y); //紫色是程序中定义的一个函数，它的作用是执行 入队操作 (Enqueue)，专用于游戏的 “垄断模式” 逻辑。
             
             } else if (strncmp(buffer, "M", 1) == 0) { // "M" (Miss - 未击中)
                 if (!is_in_search_mode) {
@@ -235,4 +218,5 @@ int main(int argc, char *argv[]) {
     
     return 0; // 程序正常退出
 }
+
 
