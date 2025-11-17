@@ -25,7 +25,7 @@ City *my_cities = NULL;         // 一个指向 City 类型的指针。我们将
 int num_my_cities = 0;          // 记录数组中有多少个城市
 Position *played_positions = NULL; // 同上，用于存储所有"玩过"的坐标
 int num_played = 0;                // 记录玩过的坐标数量
-int grid_sw_x, grid_sw_y, grid_w, grid_h; // 存储网格的边界信息
+int grid_sw_x, grid_sw_y, grid_w, grid_h; // 存储网格的边界信息w是宽度h是高度，grid是网格，sw是方向
 
 /**
  * 核心函数：检查 (x, y) 坐标是否"可用"
@@ -35,7 +35,7 @@ int grid_sw_x, grid_sw_y, grid_w, grid_h; // 存储网格的边界信息
 int is_available(int x, int y) {
     // 1. 检查是否在网格边界之外 (注意: >= 右/上边界就算越界)
     if (x < grid_sw_x || x >= grid_sw_x + grid_w || y < grid_sw_y || y >= grid_sw_y + grid_h) {
-        return 0; // 越界，不可用
+        return 0; // 越界，不可用 ||是logic or
     }
     // 2. 遍历所有"我的城市"，检查坐标是否在某个城市内部
     for (int i = 0; i < num_my_cities; i++) {
@@ -51,15 +51,15 @@ int is_available(int x, int y) {
             return 0; // 已经玩过，不可用
         }
     }
-    return 1; // 所有检查都通过了，这个点可用！
+    return 1; // 所有检查都通过了，这个点可用
 }
 
 // 添加一个"已玩"位置到 played_positions 动态数组
 void add_played_position(int x, int y) {
     num_played++; // 计数+1
-    // 'realloc' (重新分配内存) 是动态数组的核心！
+    // realloc重新分配内存) 是动态数组的核心
     // 它会尝试扩大 'played_positions' 指向的内存，使其能多放一个 Position
-    played_positions = (Position*) realloc(played_positions, num_played * sizeof(Position));
+    played_positions = (Position*) realloc(played_positions, num_played * sizeof(Position));//sizeof计算bit大小
     if (played_positions == NULL) exit(1); // 如果内存不够，realloc 会失败返回 NULL，程序退出
     played_positions[num_played - 1].x = x; // 在数组的新末尾 (索引是 n-1) 存入新坐标
     played_positions[num_played - 1].y = y;
@@ -70,7 +70,7 @@ void add_my_city(int x, int y, int w, int h) {
     num_my_cities++;
     my_cities = (City*) realloc(my_cities, num_my_cities * sizeof(City));
     if (my_cities == NULL) exit(1); // 内存分配失败，退出
-    my_cities[num_my_cities - 1].x = x;
+    my_cities[num_my_cities - 1].x = x;//Data assignment
     my_cities[num_my_cities - 1].y = y;
     my_cities[num_my_cities - 1].w = w;
     my_cities[num_my_cities - 1].h = h;
@@ -78,10 +78,10 @@ void add_my_city(int x, int y, int w, int h) {
 
 
 // 入队 (Enqueue): 将 (x, y) 的四个邻居 (N, E, S, W) 加入 'monq' 队尾
-void enq_neighbours(MonopolizationQueue *monq, int x, int y) {
+void enq_neighbours(MonopolizationQueue *monq, int x, int y) {//MonopolizationQueue *monq 是一个指针，它指向程序中用于实现垄断队列（Monopolization Queue）的结构体
     int dx[] = {0, 1, 0, -1}; // 对应 'N', 'E', 'S', 'W' 的 x 变化
     int dy[] = {1, 0, -1, 0}; // 对应 'N', 'E', 'S', 'W' 的 y 变化
-    char dirs[] = {'N', 'E', 'S', 'W'};
+    char dirs[] = {'N', 'E', 'S', 'W'};//char dirs[]这个数组是程序用来记录和追踪新加入队列的邻居是属于哪个方向的。
 
     for (int i = 0; i < 4; i++) {
         // 'malloc' (内存分配) 申请一块新内存来存放新节点
@@ -109,31 +109,30 @@ void clear_queue(MonopolizationQueue *monq) {
     int x, y;
     char dir;
     // 循环: 只要 deq() 成功 (返回 1)，就继续
-    while (deq(monq, &x, &y, &dir));
+    while (deq(monq, &x, &y, &dir));//deq函数负责从队列中移除并取出一个元素。
 }
 
 // --- 主函数: 程序的入口 ---
-// (argc: 命令行参数个数, argv: 存着命令行参数字符串的数组)
+// (argc命令行参数个数, argv存着命令行参数字符串的数组)
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         return 1; // 运行程序时必须提供玩家编号 (如: ./a.out 1)
     }
-    int my_player_num = atoi(argv[1]); // 'atoi': 把字符串 "1" 转换成整数 1
-    char buffer[100]; // 准备一个100字节的"缓冲区"，用来
+    int my_player_num = atoi(argv[1]); // 'atoi': 把字符串 "1" 转换成整数 1。将一个表示整数的字符串（文本）转换成实际的整数数据类型（数字）。
+    char buffer[100]; // 准备一个100字节的"缓冲区"，用来充当一个临时存储区，用于处理I/O
 
     // --- 游戏主循环 ---
     // 只要能从 'stdin' 读到一行 (比如 "P1:" 或 "P2:")，就继续循环
-    while (fgets(buffer, sizeof(buffer), stdin)) {
+    while (fgets(buffer, sizeof(buffer), stdin)) {//fgets 的作用是持续读取游戏的输入数据，并控制整个游戏的主循环。
         int current_turn_player = 0; // 0 = 未知
-        if (strncmp(buffer, "P1:", 3) == 0) current_turn_player = 1;
+        if (strncmp(buffer, "P1:", 3) == 0) current_turn_player = 1;//的作用是比较两个字符串的前 n 个字符是否相同
         else if (strncmp(buffer, "P2:", 3) == 0) current_turn_player = 2;
 
         // A) 如果是别人的回合
         if (current_turn_player != my_player_num) {
-            fgets(buffer, sizeof(buffer), stdin); // 读对手的猜测坐标，如 "(10, 20)"
+            fgets(buffer, sizeof(buffer), stdin); //fgets 的作用是持续读取游戏的输入数据，并控制整个游戏的主循环。
             int x, y;
-            if(sscanf(buffer, "(%d, %d)", &x, &y) == 2) {
-                add_played_position(x, y); // 必须记录，否则 is_available 会出错
+            add_played_position(x, y); // 必须记录，否则 is_available 会出错
             }
             fgets(buffer, sizeof(buffer), stdin); // 读对手的猜测结果 (H, M, R, G)
             if (strncmp(buffer, "G", 1) == 0) break; // 游戏结束，跳出 while 循环
@@ -149,7 +148,7 @@ int main(int argc, char *argv[]) {
                 // "垄断模式": 从队列里拿一个坐标来猜
                 bool found_move = false;
                 // 循环: 只要能从队列取出 (deq)
-                while (deq(&mon_queue, &guess_x, &guess_y, &last_deq_dir)) {
+                while (deq(&mon_queue, &guess_x, &guess_y, &last_deq_dir)) {//deq函数负责从队列中移除并取出一个元素。
                     // 检查这个坐标是否"可用" 且 在"hit边界"内
                     if (is_available(guess_x, guess_y) && 
                         (guess_x >= hit_min_x && guess_x <= hit_max_x && guess_y >= hit_min_y && guess_y <= hit_max_y)) {
@@ -175,7 +174,6 @@ int main(int argc, char *argv[]) {
             printf("(%d, %d)\n", guess_x, guess_y);
             // 'fflush(stdout)' 刷新缓冲区！非常重要！
             // 确保我们的猜测立刻被裁判程序读到，而不是卡在半路
-            fflush(stdout);
             add_played_position(guess_x, guess_y); // 记录"我"的猜测
 
             // C) 读取"我"的猜测结果，并更新 AI 状态
@@ -183,15 +181,15 @@ int main(int argc, char *argv[]) {
             
             if (strncmp(buffer, "H", 1) == 0) { // "H" (Hit - 击中)
                 if (is_in_search_mode) {
-                    is_in_search_mode = false; // 太好了！从"搜索"切换到"垄断"
+                    is_in_search_mode = false; // 太好了从"搜索"切换到"垄断"
                     // 重置 "hit 边界" 为整个网格 (因为是新城市)
-                    hit_min_x = grid_sw_x;
+                    hit_min_x = grid_sw_x;//这一步是将整个游戏网格的边界值复制或计算后赋值给 hit_min/max 变量
                     hit_max_x = grid_sw_x + grid_w - 1;
                     hit_min_y = grid_sw_y;
                     hit_max_y = grid_sw_y + grid_h - 1;
                 }
                 // 把"击中"点的四个邻居加入队列，准备下次探索
-                enq_neighbours(&mon_queue, guess_x, guess_y);
+                enq_neighbours(&mon_queue, guess_x, guess_y);//紫色是入队操作 (Enqueue)
             
             } else if (strncmp(buffer, "M", 1) == 0) { // "M" (Miss - 未击中)
                 if (!is_in_search_mode) {
@@ -207,7 +205,7 @@ int main(int argc, char *argv[]) {
                 if (is_in_search_mode) {
                     // 在"搜索"时，R 提供了线索，缩小"搜索边界"
                     int n, e, s, w;
-                    sscanf(buffer, "R (%d, %d, %d, %d)", &n, &e, &s, &w);
+                    sscanf(buffer, "R (%d, %d, %d, %d)", &n, &e, &s, &w);//sscanf从字符串中格式化扫描
                     if (n > 0) search_min_y = guess_y + 1; // 提示在北，下次只搜北边
                     else if (e > 0) search_min_x = guess_x + 1; // 提示在东
                     else if (s > 0) search_max_y = guess_y - 1; // 提示在南
@@ -237,4 +235,5 @@ int main(int argc, char *argv[]) {
     
     return 0; // 程序正常退出
 }
+
 
