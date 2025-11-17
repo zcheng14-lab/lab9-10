@@ -17,7 +17,6 @@ typedef struct SearchPQ SearchPQ;
 struct SearchPQ
 {
     Candidate **storage; // 动态数组, 存的是指向 Candidate 的指针
-    int size, capacity;
 };
 
 // --- 堆 (Heap) 索引计算 ---
@@ -39,11 +38,7 @@ Candidate *create_candidate(int x, int y, int cc)
     return cand;
 }
 
-// 释放 "候选点" 内存
-void destroy_candidate(Candidate *cand)
-{
-    free(cand);
-}
+
 
 // 核心: 比较两个候选点的优先级
 // 1. cc 越大越优先
@@ -69,21 +64,7 @@ int is_prioritized(Candidate *cand1, Candidate *cand2)
     return 0;
 }
 
-// 创建一个新的、空的 "优先队列"
-SearchPQ *create_searchPQ()
-{
-    SearchPQ *pq = (SearchPQ *) malloc(sizeof(SearchPQ));
-    if (pq == NULL) {
-        exit(1);
-    }
-    pq->capacity = 10; // 初始容量
-    pq->size = 0;
-    pq->storage = (Candidate **) malloc(pq->capacity * sizeof(Candidate *));
-    if (pq->storage == NULL) {
-        exit(1);
-    }
-    return pq;
-}
+
 
 // 销毁 "优先队列" (释放所有相关内存)
 void destroy_searchPQ(SearchPQ *pq)
@@ -111,19 +92,6 @@ void pq_swap(SearchPQ *pq, int i, int j) {
     pq->storage[j]->pqi = j;
 }
 
-
-// 更新 (Update): 修改元素 i 的优先级
-void pq_update(SearchPQ *pq, int i, int new_cc)
-{
-    int old_cc = pq->storage[i]->cc;
-    pq->storage[i]->cc = new_cc;
-    // 自动判断上浮还是下沉
-    if (new_cc > old_cc) {
-        pq_heapify_up(pq, i);
-    } else {
-        pq_heapify_down(pq, i);
-    }
-}
 
 
 // 提取最大 (Extract Max): 移除并返回"优先级最高"的元素
